@@ -1,3 +1,5 @@
+'use server';
+
 import { feedbackSchema } from "@/constants";
 import { db } from "@/firebase/admin";
 import { google } from "@ai-sdk/google";
@@ -44,7 +46,11 @@ export async function getInterviewsById(id: string): Promise<Interview | null> {
 }
 
 export async function createFeedback(params: CreateFeedbackParams) {
-  const { interviewId, userId, transcript, feedbackId } = params;
+  const { interviewId, userId, transcript } = params;
+
+  if (!userId) {
+    throw new Error("userId is required to save feedback.");
+  }
 
   try {
     const formattedTranscript = transcript
@@ -54,7 +60,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
+    const { object: { totalScore, categoryScores, strengths, areasForImprovement, finalAssessment } } = await generateObject({
       model: google("gemini-2.0-flash-001", {
         structuredOutputs: false,
       }),
@@ -76,26 +82,20 @@ export async function createFeedback(params: CreateFeedbackParams) {
     });
 
     const feedback = await db.collection('feedback').add({
-      interviewId: interviewId,
-      userId: userId,
-      totalScore: object.totalScore,
-      categoryScores: object.categoryScores,
-      strengths: object.strengths,
-      areasForImprovement: object.areasForImprovement,
-      finalAssessment: object.finalAssessment,
+      interviewId,
+      userId,
+      totalScore,
+      categoryScores,
+      strengths,
+      areasForImprovement,
+      finalAssessment,
       createdAt: new Date().toISOString(),
     })
-    let feedbackRef;
 
-    if (feedbackId) {
-      feedbackRef = db.collection("feedback").doc(feedbackId);
-    } else {
-      feedbackRef = db.collection("feedback").doc();
+    return {
+      success: true,
+      feedbackId: feedback.id,
     }
-
-    await feedbackRef.set(feedback);
-
-    return { success: true, feedbackId: feedbackRef.id };
   } catch (e) {
     console.error("Error saving feedback:", e);
 
@@ -104,3 +104,5 @@ export async function createFeedback(params: CreateFeedbackParams) {
     }
   }
 }
+
+

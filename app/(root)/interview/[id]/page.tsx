@@ -7,11 +7,11 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import React from 'react'
 
-const Page = async ({params}) => {
+const Page = async ({params}: RouteParams) => {
   const { id } = await params;
   const user = await getCurrentUser
-  const interview = await getInterviewsById(id);
 
+  const interview = await getInterviewsById(id);
   if(!interview) redirect('/')
 
   return (
