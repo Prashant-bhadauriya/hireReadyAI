@@ -26,7 +26,7 @@ export async function setSessionCookie(idToken: string) {
 }
 
 export async function signUp(params: SignUpParams) {
-  const { uid, name, email } = params;
+  const { uid, name, email, profileURL } = params;
 
   try {
     // check if user exists in db
@@ -41,7 +41,7 @@ export async function signUp(params: SignUpParams) {
     await db.collection("users").doc(uid).set({
       name,
       email,
-      // profileURL,
+      profileURL,
       // resumeURL,
     });
 
@@ -90,11 +90,11 @@ export async function signIn(params: SignInParams) {
 }
 
 // Sign out user by clearing the session cookie
-// export async function signOut() {
-//   const cookieStore = await cookies();
+export async function signOut() {
+  const cookieStore = await cookies();
 
-//   cookieStore.delete("session");
-// }
+  cookieStore.delete("session");
+}
 
 // Get current user from session cookie
 export async function getCurrentUser(): Promise<User | null> {

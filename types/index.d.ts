@@ -50,6 +50,7 @@ interface InterviewCardProps {
 interface AgentProps {
   userName: string;
   userId?: string;
+  profileImage?: string;
   interviewId?: string;
   feedbackId?: string;
   type: "generate" | "interview";
@@ -79,6 +80,7 @@ interface SignInParams {
 interface SignUpParams {
   uid: string;
   name: string;
+  profileURL: string;
   email: string;
   password: string;
 }
